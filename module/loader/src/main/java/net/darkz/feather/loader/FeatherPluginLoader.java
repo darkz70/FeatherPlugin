@@ -44,4 +44,3 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
         case NEOFORGE: return new NeoForgeConfigurator();
         default: throw new IllegalArgumentException("[FeatherPlugin] Unsupported loader: " + loader);
     }
-}
