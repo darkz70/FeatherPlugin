@@ -40,7 +40,6 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
     private LoaderConfigurator resolveConfigurator(ModLoader loader) {
         return switch (loader) {
             case FABRIC   -> new FabricConfigurator();
-            case QUILT    -> new QuiltConfigurator();
             case FORGE    -> new ForgeConfigurator();
             case NEOFORGE -> new NeoForgeConfigurator();
         };
