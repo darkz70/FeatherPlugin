@@ -21,7 +21,7 @@ import org.gradle.api.initialization.Settings;
  *
  * featherVersions {
  *     // each call: mc version + one or more loaders
- *     version("1.21.1", "fabric", "quilt", "neoforge")
+ *     version("1.21.1", "fabric", "neoforge")
  *     version("1.20.1", "fabric", "forge")
  * }
  * }</pre>
