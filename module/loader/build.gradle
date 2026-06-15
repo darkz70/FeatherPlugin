@@ -3,9 +3,6 @@ dependencies {
     // Fabric Loom
     compileOnly("net.fabricmc:fabric-loom:${property("fabric_loom_version")}") { transitive = false }
 
-    // Quilt Loom
-    compileOnly("org.quiltmc:quilt-loom:${property("quilt_loom_version")}") { transitive = false }
-
     // ForgeGradle
     compileOnly("net.minecraftforge.gradle:ForgeGradle:${property("forge_gradle_version")}") { transitive = false }
 
