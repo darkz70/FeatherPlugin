@@ -38,10 +38,10 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
     // ──────────────────────────────────────────────────────────────
 
     private LoaderConfigurator resolveConfigurator(ModLoader loader) {
-        return switch (loader) {
-            case FABRIC   -> new FabricConfigurator();
-            case FORGE    -> new ForgeConfigurator();
-            case NEOFORGE -> new NeoForgeConfigurator();
-        };
+    switch (loader) {
+        case FABRIC:   return new FabricConfigurator();
+        case FORGE:    return new ForgeConfigurator();
+        case NEOFORGE: return new NeoForgeConfigurator();
+        default: throw new IllegalArgumentException("[FeatherPlugin] Unsupported loader: " + loader);
     }
 }
