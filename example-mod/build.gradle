@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// example-mod/build.gradle  –  Stonecutter controller (chiseled)
+// ─────────────────────────────────────────────────────────────────────────────
+plugins {
+    id 'dev.kikugie.stonecutter'
+    id 'net.darkz.feather.feather-core'       version '1.0.0' apply false
+    id 'net.darkz.feather.feather-loader'     version '1.0.0' apply false
+    id 'net.darkz.feather.feather-stonecutter' version '1.0.0' apply false
+}
+
+// Each versioned sub-project will apply the plugins itself (see versions build.gradle)
+stonecutter.configureEach {
+    // Common Java version for all sub-projects
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+        withSourcesJar()
+    }
+}

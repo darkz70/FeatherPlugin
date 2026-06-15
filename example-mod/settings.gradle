@@ -1,0 +1,38 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// example-mod/settings.gradle
+// Shows how a mod author wires up FeatherPlugin + Stonecutter for a
+// multi-version, multi-loader project.
+// ─────────────────────────────────────────────────────────────────────────────
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenLocal()
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://maven.quiltmc.org/repository/release/" }
+        maven { url "https://maven.minecraftforge.net/" }
+        maven { url "https://maven.neoforged.net/releases/" }
+        maven { url "https://maven.kikugie.dev/releases" }
+        maven { url "https://maven.darkz.com/releases" }  // FeatherPlugin
+    }
+}
+
+plugins {
+    // Stonecutter settings plugin – must come first
+    id 'dev.kikugie.stonecutter' version '0.5.4'
+
+    // FeatherPlugin settings module – registers the version/loader matrix
+    id 'net.darkz.feather.feather-settings' version '1.0.0'
+}
+
+// ── Version / loader matrix ──────────────────────────────────────────────────
+featherVersions {
+    version("1.21.1", "fabric", "quilt", "neoforge")
+    version("1.20.1", "fabric", "forge")
+}
+
+// Tell Stonecutter which build script is the controller
+stonecutter {
+    centralScript = "build.gradle"
+    kotlinController = false  // set true if using build.gradle.kts
+    create rootProject
+}

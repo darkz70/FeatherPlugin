@@ -1,0 +1,2 @@
+// module/common – compile-only dependency shared by every other module
+// Nothing special: inherits all configuration from the root build.gradle

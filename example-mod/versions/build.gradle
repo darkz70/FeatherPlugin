@@ -1,0 +1,53 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// example-mod/versions/build.gradle
+// Applied to every versioned sub-project (e.g. 1.21.1-fabric, 1.20.1-forge).
+// Stonecutter exposes `stonecutter.current` which carries the version string.
+// ─────────────────────────────────────────────────────────────────────────────
+plugins {
+    id 'net.darkz.feather.feather-core'        version '1.0.0'
+    id 'net.darkz.feather.feather-loader'      version '1.0.0'
+    id 'net.darkz.feather.feather-stonecutter' version '1.0.0'
+}
+
+// ── Parse MC version and loader from the Stonecutter project name ─────────────
+// e.g. current.project = "1.21.1-neoforge"  →  mc = "1.21.1", loader = "neoforge"
+def currentProject = stonecutter.current.project           // "1.21.1-neoforge"
+def splitAt        = currentProject.lastIndexOf('-')
+def mcVersion      = currentProject.substring(0, splitAt)  // "1.21.1"
+def loaderName     = currentProject.substring(splitAt + 1) // "neoforge"
+
+// ── FeatherPlugin DSL ─────────────────────────────────────────────────────────
+feather {
+    loader           = loaderName
+    minecraftVersion = mcVersion
+
+    // Loader-specific version from gradle.properties
+    // e.g. have properties: fabric_loader_version, neoforge_version, forge_version, quilt_loader_version
+    loaderVersion = switch (loaderName) {
+        case "fabric"   -> property("fabric_loader_version")
+        case "quilt"    -> property("quilt_loader_version")
+        case "forge"    -> property("forge_version")
+        case "neoforge" -> property("neoforge_version")
+        default         -> throw new GradleException("Unknown loader: " + loaderName)
+    }
+
+    modId = "example_mod"
+}
+
+// ── Common mod metadata ───────────────────────────────────────────────────────
+group   = "com.example"
+version = "${mcVersion}-${property("mod_version")}"
+
+// ── Loader-specific source-set additions (Stonecutter preprocessor) ───────────
+// The //? if fabric { ... } //? } blocks in .java files handle the rest.
+
+// ── Dependencies ──────────────────────────────────────────────────────────────
+dependencies {
+    // Fabric / Quilt API
+    //? if fabric {
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}"
+    //?}
+    //? if quilt {
+    modImplementation "org.quiltmc.quilted-fabric-api:quilted-fabric-api:${property("quilt_fabric_api_version")}"
+    //?}
+}
