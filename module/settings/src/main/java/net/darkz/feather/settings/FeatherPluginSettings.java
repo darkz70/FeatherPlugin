@@ -1,34 +1,9 @@
 package net.darkz.feather.settings;
 
-import dev.kikugie.stonecutter.StonecutterSettings;
 import net.darkz.feather.common.ModLoader;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
 
-/**
- * {@code net.darkz.feather.feather-settings} plugin.
- *
- * <p>Applied in {@code settings.gradle} (not {@code build.gradle}).
- * Provides a {@code featherVersions { }} block that generates the
- * Stonecutter version matrix from a compact DSL:
- *
- * <pre>{@code
- * // settings.gradle
- * plugins {
- *     id 'dev.kikugie.stonecutter'
- *     id 'net.darkz.feather.feather-settings' version '1.0.0'
- * }
- *
- * featherVersions {
- *     // each call: mc version + one or more loaders
- *     version("1.21.1", "fabric", "neoforge")
- *     version("1.20.1", "fabric", "forge")
- * }
- * }</pre>
- *
- * <p>This translates to Stonecutter sub-project names like
- * {@code 1.21.1-fabric}, {@code 1.21.1-quilt}, {@code 1.20.1-forge}, etc.
- */
 public class FeatherPluginSettings implements Plugin<Settings> {
 
     @Override
@@ -39,7 +14,6 @@ public class FeatherPluginSettings implements Plugin<Settings> {
         settings.getGradle().settingsEvaluated(s -> {
             if (ext.getEntries().isEmpty()) return;
 
-            // Attempt to wire into Stonecutter settings if present
             Object scSettings = settings.getExtensions().findByName("stonecutter");
             if (scSettings == null) {
                 settings.getLogger().warn(
@@ -54,7 +28,6 @@ public class FeatherPluginSettings implements Plugin<Settings> {
 
                 for (FeatherVersionsExtension.Entry entry : ext.getEntries()) {
                     for (String loader : entry.loaders()) {
-                        // Validate loader
                         ModLoader.fromProperty(loader);
                         String versionName = entry.mcVersion() + "-" + loader;
                         shared.getClass()
