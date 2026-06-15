@@ -9,24 +9,6 @@ import net.darkz.feather.loader.configurator.LoaderConfigurator;
 import net.darkz.feather.loader.configurator.NeoForgeConfigurator;
 import org.gradle.api.Project;
 
-/**
- * {@code net.darkz.feather.feather-loader} plugin.
- *
- * <p>Detects the value of {@code feather.loader} after project evaluation
- * and delegates to the matching {@link LoaderConfigurator}.
- *
- * <pre>{@code
- * plugins {
- *     id 'net.darkz.feather.feather-loader' version '1.0.0'
- * }
- * feather {
- *     loader = "neoforge"         // or: fabric | forge
- *     minecraftVersion = "1.21.1"
- *     loaderVersion    = "21.1.0"
- * }
- * }</pre>
- */
-
 public class FeatherPluginLoader extends FeatherBasePlugin {
 
     @Override
