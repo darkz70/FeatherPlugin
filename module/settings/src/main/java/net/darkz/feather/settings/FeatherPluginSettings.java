@@ -3,8 +3,12 @@ package net.darkz.feather.settings;
 import net.darkz.feather.common.ModLoader;
 import org.gradle.api.Plugin;
 import org.gradle.api.initialization.Settings;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 
 public class FeatherPluginSettings implements Plugin<Settings> {
+
+    private static final Logger log = Logging.getLogger(FeatherPluginSettings.class);
 
     @Override
     public void apply(Settings settings) {
@@ -16,9 +20,8 @@ public class FeatherPluginSettings implements Plugin<Settings> {
 
             Object scSettings = settings.getExtensions().findByName("stonecutter");
             if (scSettings == null) {
-                settings.getLogger().warn(
-                        "[FeatherPlugin/Settings] 'stonecutter' extension not found. " +
-                        "Apply 'dev.kikugie.stonecutter' before 'feather-settings'.");
+                log.warn("[FeatherPlugin/Settings] 'stonecutter' extension not found. " +
+                         "Apply 'dev.kikugie.stonecutter' before 'feather-settings'.");
                 return;
             }
 
@@ -36,12 +39,10 @@ public class FeatherPluginSettings implements Plugin<Settings> {
                     }
                 }
 
-                settings.getLogger().lifecycle(
-                        "[FeatherPlugin/Settings] Registered " + ext.getEntries().size() +
-                        " MC version(s) with " + ext.totalLoaderCount() + " loader variant(s).");
+                log.lifecycle("[FeatherPlugin/Settings] Registered " + ext.getEntries().size() +
+                              " MC version(s) with " + ext.totalLoaderCount() + " loader variant(s).");
             } catch (Exception e) {
-                settings.getLogger().warn(
-                        "[FeatherPlugin/Settings] Could not configure Stonecutter: " + e.getMessage());
+                log.warn("[FeatherPlugin/Settings] Could not configure Stonecutter: " + e.getMessage());
             }
         });
     }
