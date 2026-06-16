@@ -15,6 +15,21 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
     protected void applyPlugin(Project project) {
         FeatherExtension ext = ensureExtension(project);
 
+        // Apply the loader toolchain plugin eagerly so that its DSL extensions
+        // (e.g. fabric-loom's include() / minecraft / mappings configurations)
+        // are available when the build script's dependencies {} block is evaluated.
+        // We detect the loader from the project name (e.g. "fabric-26.1") immediately.
+        String projectName = project.getName();
+        if (projectName.contains("-")) {
+            String loaderStr = projectName.substring(0, projectName.indexOf("-"));
+            try {
+                ModLoader eagerLoader = ModLoader.fromProperty(loaderStr);
+                project.getPluginManager().apply(eagerLoader.gradlePluginId);
+            } catch (IllegalArgumentException ignored) {
+                // Not a recognized loader prefix, will be applied in afterEvaluate
+            }
+        }
+
         project.afterEvaluate(p -> {
             ModLoader loader = ext.resolvedLoader();
             info("Applying loader toolchain: " + loader.name());
