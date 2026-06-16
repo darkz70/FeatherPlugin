@@ -6,7 +6,7 @@ package net.darkz.feather.common;
  */
 public enum ModLoader {
 
-    FABRIC("fabric", "net.fabricmc.loom") {
+    FABRIC("fabric", "fabric-loom") {
         @Override public boolean isFabricLike() { return true; }
     },
     QUILT("quilt", "org.quiltmc.loom") {
