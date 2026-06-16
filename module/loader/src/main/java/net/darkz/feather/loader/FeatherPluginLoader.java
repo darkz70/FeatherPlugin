@@ -27,8 +27,15 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
                 ModLoader eagerLoader = ModLoader.fromProperty(loaderStr);
                 // 1. Apply the loader plugin eagerly so include() and other loom
                 //    DSL methods are available at build-script configuration time.
-                project.getPluginManager().apply(eagerLoader.gradlePluginId);
-                // 2. Immediately add the minecraft dependency so that loom's own
+                project.getPluginManager().apply(eagerLoader.getPluginId(mcVersion));
+
+                // 2. Setup Java toolchain if needed (e.g. MC 26.x requires Java 25)
+                if (mcVersion.startsWith("26.")) {
+                    project.getExtensions().getByType(org.gradle.api.plugins.JavaPluginExtension.class)
+                            .getToolchain().getLanguageVersion().set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(25));
+                }
+
+                // 3. Immediately add the minecraft dependency so that loom's own
                 //    afterEvaluate listener (registered during apply above) finds
                 //    the 'minecraft' configuration non-empty when it fires.
                 if (eagerLoader.isFabricLike()) {

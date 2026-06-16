@@ -8,6 +8,12 @@ public enum ModLoader {
 
     FABRIC("fabric", "fabric-loom") {
         @Override public boolean isFabricLike() { return true; }
+        @Override public String getPluginId(String mcVersion) {
+            if (mcVersion != null && mcVersion.startsWith("26.")) {
+                return "net.fabricmc.fabric-loom";
+            }
+            return super.getPluginId(mcVersion);
+        }
     },
     QUILT("quilt", "org.quiltmc.loom") {
         @Override public boolean isFabricLike() { return true; }
@@ -24,6 +30,10 @@ public enum ModLoader {
 
     /** Gradle plugin id that needs to be applied for this loader. */
     public final String gradlePluginId;
+
+    public String getPluginId(String mcVersion) {
+        return gradlePluginId;
+    }
 
     ModLoader(String id, String gradlePluginId) {
         this.id = id;

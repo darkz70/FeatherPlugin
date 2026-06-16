@@ -5,8 +5,6 @@ import org.gradle.api.Project;
 
 public class FabricConfigurator implements LoaderConfigurator {
 
-    private static final String LOOM_PLUGIN_ID = "fabric-loom";
-
     @Override
     public void configure(Project project, FeatherExtension ext) {
         String mc     = ext.getMinecraftVersion().getOrElse("");
@@ -15,7 +13,7 @@ public class FabricConfigurator implements LoaderConfigurator {
         requireProperty(ext, "loaderVersion", loader);
 
         // Apply loom (idempotent – may already be applied eagerly by FeatherPluginLoader)
-        project.getPluginManager().apply(LOOM_PLUGIN_ID);
+        project.getPluginManager().apply(ext.resolvedLoader().getPluginId(mc));
 
         // Add minecraft dependency if not already added eagerly by FeatherPluginLoader.
         // FeatherPluginLoader adds it immediately after applying loom (before loom's

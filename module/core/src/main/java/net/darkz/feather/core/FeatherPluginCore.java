@@ -44,9 +44,18 @@ public class FeatherPluginCore extends FeatherBasePlugin {
             }
 
             ModLoader loader = ext.resolvedLoader();
+            String mc = ext.getMinecraftVersion().getOrElse("");
             info("Configured for loader: " + loader.name() +
-                 " | MC: " + ext.getMinecraftVersion().getOrElse("?") +
+                 " | MC: " + mc +
                  " | Loader ver: " + ext.getLoaderVersion().getOrElse("?"));
+
+            // Setup Java toolchain for 26.x if not already done by loader
+            if (mc.startsWith("26.")) {
+                try {
+                    p.getExtensions().getByType(org.gradle.api.plugins.JavaPluginExtension.class)
+                            .getToolchain().getLanguageVersion().set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(25));
+                } catch (Exception ignored) {}
+            }
 
             if (Boolean.TRUE.equals(ext.getIncludeDefaultRepositories().get())) {
                 applyDefaultRepositories(p, loader);
