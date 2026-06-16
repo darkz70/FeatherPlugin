@@ -17,12 +17,15 @@ public class FabricConfigurator implements LoaderConfigurator {
         // Apply loom (idempotent – may already be applied eagerly by FeatherPluginLoader)
         project.getPluginManager().apply(LOOM_PLUGIN_ID);
 
-        // Add minecraft and mappings dependencies EAGERLY (not in afterEvaluate).
-        // fabric-loom registers its own afterEvaluate listener that calls
-        // "setupMinecraft" which requires the 'minecraft' configuration to be
-        // populated before that listener fires. Adding them here ensures they
-        // are present when loom's listener runs.
-        project.getDependencies().add("minecraft", "com.mojang:minecraft:" + mc);
+        // Add minecraft dependency if not already added eagerly by FeatherPluginLoader.
+        // FeatherPluginLoader adds it immediately after applying loom (before loom's
+        // afterEvaluate listener fires) using the MC version from the project name.
+        // Here we use the authoritative value from feather{} DSL instead.
+        boolean minecraftAlreadyAdded = !project.getConfigurations()
+                .getByName("minecraft").getDependencies().isEmpty();
+        if (!minecraftAlreadyAdded) {
+            project.getDependencies().add("minecraft", "com.mojang:minecraft:" + mc);
+        }
 
         // Mojang mappings
         Object loom = project.getExtensions().findByName("loom");

@@ -22,9 +22,18 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
         String projectName = project.getName();
         if (projectName.contains("-")) {
             String loaderStr = projectName.substring(0, projectName.indexOf("-"));
+            String mcVersion  = projectName.substring(projectName.indexOf("-") + 1);
             try {
                 ModLoader eagerLoader = ModLoader.fromProperty(loaderStr);
+                // 1. Apply the loader plugin eagerly so include() and other loom
+                //    DSL methods are available at build-script configuration time.
                 project.getPluginManager().apply(eagerLoader.gradlePluginId);
+                // 2. Immediately add the minecraft dependency so that loom's own
+                //    afterEvaluate listener (registered during apply above) finds
+                //    the 'minecraft' configuration non-empty when it fires.
+                if (eagerLoader.isFabricLike()) {
+                    project.getDependencies().add("minecraft", "com.mojang:minecraft:" + mcVersion);
+                }
             } catch (IllegalArgumentException ignored) {
                 // Not a recognized loader prefix, will be applied in afterEvaluate
             }
