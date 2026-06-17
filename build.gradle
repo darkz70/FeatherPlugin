@@ -15,8 +15,8 @@ tasks.register("buildAll", Copy) {
     group = "build"
     into "${project.rootDir}/libs"
     project.rootProject.subprojects.each { subProj ->
-        def jarTask = subProj.tasks.named("jar")
-        if (jarTask.isPresent()) from(jarTask.get().outputs.files)
+        def jarTask = subProj.tasks.findByName("jar")
+        if (jarTask != null) from(jarTask.outputs.files)
     }
 }
 
@@ -56,7 +56,8 @@ subprojects { subProject ->
     }
 
     subProject.rootProject.tasks.named("buildAll").configure { buildAll ->
-        buildAll.dependsOn(subProject.tasks.named("jar").get())
+        def jarTask = subProject.tasks.findByName("jar")
+        if (jarTask != null) buildAll.dependsOn(jarTask)
     }
 
     subProject.tasks.named("jar").configure { jar ->
@@ -79,14 +80,11 @@ modules.forEach { module ->
         create(module) {
             id                  = "${pluginMavenPackage}.${mainModuleId}-${module}"
             implementationClass = "${pluginPackage}.${module}.${moduleName}"
-            version             = pluginVersion
-            description         = pluginDescription
         }
     }
 
     moduleProject.publishing {
         repositories {
-            // GitHub Packages — публикация бесплатная
             maven {
                 name = "GitHubPackages"
                 url  = uri("https://maven.pkg.github.com/darkz70/FeatherPlugin")

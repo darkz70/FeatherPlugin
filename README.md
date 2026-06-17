@@ -1,7 +1,7 @@
 # 🪶 FeatherPlugin
 
 > All-in-one Gradle plugin for Minecraft mod development with **Fabric · Quilt · Forge · NeoForge** support.
-> Inspired by [MossyPlugin](https://github.com/darkz/FeatherPlugin) by darkz — extended with a full multi-loader system.
+> Inspired by [MossyPlugin] by LopyMine(https://github.com/darkz/FeatherPlugin) by darkz — extended with a full multi-loader system.
 
 ---
 
