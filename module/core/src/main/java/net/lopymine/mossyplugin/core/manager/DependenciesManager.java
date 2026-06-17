@@ -3,30 +3,35 @@ package net.darkz.feather.core.manager;
 import java.util.*;
 import java.util.function.Consumer;
 import lombok.experimental.ExtensionMethod;
+import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.darkz.feather.common.MossyUtils;
 import net.darkz.feather.core.FeatherPluginCore;
-import net.darkz.feather.core.data.MossyProjectConfigurationData;
 import net.darkz.feather.core.extension.*;
 import net.darkz.feather.core.extension.MossyCoreAdditionalDependencies.AdditionalDependencyOverride;
-import net.darkz.feather.core.loader.LoaderManager;
-import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension;
 import org.gradle.api.*;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.artifacts.repositories.*;
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.jetbrains.annotations.NotNull;
 
 @ExtensionMethod(FeatherPluginCore.class)
 public class DependenciesManager {
 
-	private static void addDependencies(@NotNull MossyProjectConfigurationData data, MossyCoreDependenciesExtension extension) {
-		Project project = data.project();
-		LoaderManager loaderManager = data.loaderManager();
-
+	private static void addDependencies(MossyCoreDependenciesExtension extension, Project project) {
 		String minecraft = extension.getMinecraft();
+		String mappings = extension.getMappings();
+		String fabricApi = extension.getFabricApi();
+		String fabricLoader = extension.getFabricLoader();
 		String lombok = extension.getLombok();
 
 		DependencyHandler dependencies = project.getDependencies();
-		loaderManager.applyDependencies(data, extension);
+		dependencies.add("minecraft", "com.mojang:minecraft:%s".formatted(minecraft));
+		if ("mojang".equals(mappings)) {
+			dependencies.add("mappings", ((LoomGradleExtensionAPI) project.getExtensions().getByName("loom")).officialMojangMappings());
+		} else {
+			dependencies.add("mappings", "net.fabricmc:yarn:%s:v2".formatted(mappings));
+		}
+		dependencies.add("modImplementation", "net.fabricmc.fabric-api:fabric-api:%s".formatted(fabricApi));
+		dependencies.add("modImplementation", "net.fabricmc:fabric-loader:%s".formatted(fabricLoader));
 		dependencies.add("compileOnly", "org.projectlombok:lombok:%s".formatted(lombok));
 		dependencies.add("annotationProcessor", "org.projectlombok:lombok:%s".formatted(lombok));
 
@@ -34,12 +39,11 @@ public class DependenciesManager {
 		MossyCoreAdditionalDependencies additional = extension.getAdditional();
 		additional.disable("yacl");
 
-		String modImplementation = loaderManager.getModDependenciesImplementationMethod(data);
-
 		Map<String, AdditionalDependencyOverride> overrides = additional.getOverrides();
 		Set<String> disabled = additional.getDisabled();
 		properties.forEach((modId, version) -> {
 			if (disabled.contains(modId)) {
+				//System.out.println("Disabling auto-dependency for %s !".formatted(modId));
 				return;
 			}
 
@@ -48,7 +52,7 @@ public class DependenciesManager {
 			}
 
 			AdditionalDependencyOverride override = overrides.get(modId);
-			String configurationName = override != null ? override.configurationName() : modImplementation;
+			String configurationName = override != null ? override.configurationName() : "modImplementation";
 			dependencies.add(configurationName, "maven.modrinth:%s:%s".formatted(modId, version));
 		});
 
@@ -67,7 +71,7 @@ public class DependenciesManager {
 		if (yaclVersion != null && !yaclVersion.equals("unknown")) {
 			Set<String> oldMavenVersions = Set.of("1.19.4", "1.20", "1.20.2", "1.20.3");
 			AdditionalDependencyOverride override = overrides.get("yacl");
-			String configurationName = override != null ? override.configurationName() : modImplementation;
+			String configurationName = override != null ? override.configurationName() : "modImplementation";
 			if (oldMavenVersions.contains(minecraft)) {
 				dependencies.add(configurationName, "dev.isxander.yacl:yet-another-config-lib-fabric:%s".formatted(MossyUtils.substringBeforeLast(yaclVersion, "-")));
 			} else {
@@ -78,36 +82,16 @@ public class DependenciesManager {
 
 	private static void addRepositories(Project project) {
 		project.getRepositories().mavenCentral();
-		addRepository(project, "Forge", "https://maven.minecraftforge.net");
-		addRepository(project, "Minecraft libraries", "https://libraries.minecraft.net");
-		addRepository(project, "Quilt", "https://maven.quiltmc.org/repository/release/");
-		addRepository(project, "Sonatype", "https://oss.sonatype.org/content/repositories/snapshots/");
-		addRepository(project, "Terraformers", "https://maven.terraformersmc.com/");
-		addRepository(project, "YACL", "https://maven.isxander.dev/releases");
-		addRepository(project, "Nucleoid", "https://maven.nucleoid.xyz/");
 		addRepository(project, "Modrinth", "https://api.modrinth.com/maven", (repository) -> {
 			repository.content((descriptor) -> {
 				descriptor.includeGroup("maven.modrinth");
 			});
 		});
-		addRepository(project, "Sponge", "https://repo.spongepowered.org/repository/maven-public", (repository) -> {
-			project.getRepositories().exclusiveContent((content) -> {
-				content.forRepositories(repository);
-				@SuppressWarnings("all")
-				ExclusiveContentRepository filter = content.filter((descriptor) -> {
-					descriptor.includeGroupAndSubgroups("org.spongepowered");
-				});
-			});
-		});
-		addRepository(project, "YACL Kotlin For Forge", "https://thedarkcolour.github.io/KotlinForForge/", (repository) -> {
-			project.getRepositories().exclusiveContent((content) -> {
-				content.forRepositories(repository);
-				@SuppressWarnings("all")
-				ExclusiveContentRepository filter = content.filter((descriptor) -> {
-					descriptor.includeGroup("thedarkcolour");
-				});
-			});
-		});
+		addRepository(project, "Quilt", "https://maven.quiltmc.org/repository/release/");
+		addRepository(project, "Sonatype", "https://oss.sonatype.org/content/repositories/snapshots/");
+		addRepository(project, "Terraformers", "https://maven.terraformersmc.com/");
+		addRepository(project, "YACL", "https://maven.isxander.dev/releases");
+		addRepository(project, "Nucleoid", "https://maven.nucleoid.xyz/");
 	}
 
 	private static void addRepository(Project project, String name, String url) {
@@ -122,8 +106,7 @@ public class DependenciesManager {
 		});
 	}
 
-	public static void apply(@NotNull MossyProjectConfigurationData data) {
-		Project project = data.project();
+	public static void apply(@NotNull Project project) {
 		project.getExtensions().create("mossyDependencies", MossyCoreDependenciesExtension.class);
 
 		addRepositories(project);
@@ -135,7 +118,7 @@ public class DependenciesManager {
 			@Override
 			public void afterEvaluate(@NotNull Project project, @NotNull ProjectState state) {
 				MossyCoreDependenciesExtension extension = project.getExtensions().getByType(MossyCoreDependenciesExtension.class);
-				DependenciesManager.addDependencies(data, extension);
+				DependenciesManager.addDependencies(extension, project);
 				project.getGradle().removeProjectEvaluationListener(this);
 			}
 		});

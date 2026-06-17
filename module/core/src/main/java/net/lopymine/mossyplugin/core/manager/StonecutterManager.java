@@ -1,21 +1,16 @@
 package net.darkz.feather.core.manager;
 
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension;
-import java.util.*;
+import java.util.Map;
 import lombok.experimental.ExtensionMethod;
-import net.darkz.feather.common.MossyUtils;
 import net.darkz.feather.core.FeatherPluginCore;
-import net.darkz.feather.core.data.MossyProjectConfigurationData;
 import org.gradle.api.Project;
 import org.jetbrains.annotations.NotNull;
 
 @ExtensionMethod(FeatherPluginCore.class)
 public class StonecutterManager {
 
-	public static void apply(@NotNull MossyProjectConfigurationData data) {
-		Project project = data.project();
-		FeatherPluginCore plugin = data.plugin();
-
+	public static void apply(@NotNull Project project, FeatherPluginCore plugin) {
 		StonecutterBuildExtension stonecutter = project.getStonecutter();
 
 		String mcVersion = plugin.getProjectMultiVersion().projectVersion();
@@ -35,28 +30,6 @@ public class StonecutterManager {
 		dependencies.forEach((modId, version) -> {
 			stonecutter.getConstants().put(modId, !version.equals("unknown"));
 		});
-
-		Arrays.stream(project.getProperty("mod_loaders").split(" ")).forEach((loader) -> {
-			stonecutter.getConstants().put(loader, project.getName().startsWith(loader));
-		});
-
-		stonecutter.replacements((container) -> {
-			container.string((spec) -> {
-				spec.getDirection().set(stonecutter.getCurrent().getParsed().matches(">=1.21.11"));
-				spec.replace("ResourceLocation", "Identifier");
-				spec.replace(".location()", ".identifier()");
-				spec.replace("::location", "::identifier");
-			});
-
-			container.string((spec) -> {
-				spec.getDirection().set(stonecutter.getCurrent().getProject().contains("forge"));
-				spec.getId().set("client_fabric_commands");
-				spec.replace("import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;", "import net.minecraft.commands.CommandSourceStack;");
-				spec.replace("FabricClientCommandSource", "CommandSourceStack");
-			});
-		});
-
-		stonecutter.getFilters().exclude("resources/aws/**");
 	}
 
 	private static @NotNull String getFormatted(String modVersion) {

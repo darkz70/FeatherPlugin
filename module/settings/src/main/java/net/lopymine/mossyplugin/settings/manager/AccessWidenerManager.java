@@ -1,58 +1,54 @@
 package net.darkz.feather.settings.manager;
 
-import dev.kikugie.stonecutter.settings.StonecutterSettingsExtension;
 import java.io.*;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
 import net.darkz.feather.settings.FeatherPluginSettings;
-import net.darkz.feather.settings.project.MossyProject;
 import org.gradle.api.initialization.Settings;
 import org.jetbrains.annotations.*;
 
 public class AccessWidenerManager {
 
-	public static void apply(@NotNull Settings settings, List<MossyProject> projects) {
-		StonecutterSettingsExtension stonecutter = settings.getExtensions().getByType(StonecutterSettingsExtension.class);
+	public static void apply(@NotNull Settings settings, List<String> multiVersions) {
 		Path path = settings.getRootDir().toPath();
-		for (MossyProject project : projects) {
-			createExampleAccessWidener(path, project, stonecutter);
+		for (String version : multiVersions) {
+			createExampleAccessWidener(path, version);
 		}
 	}
 
-	public static void createExampleAccessWidener(Path rootProject, MossyProject project, StonecutterSettingsExtension stonecutter) {
-		File awFile = createAWFile(rootProject, project, stonecutter);
+	public static void createExampleAccessWidener(Path rootProject, String version) {
+		File awFile = createAWFile(rootProject, version);
 		if (awFile == null) {
 			return;
 		}
 
 		try (FileWriter writer = new FileWriter(awFile)) {
-			project.loaderManager().fillAWWillExampleText(writer, project.comparableMinecraftVersion(), stonecutter);
+			writer.write("accessWidener v2 named\n");
+			writer.write("# " + version + " AW\n");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
-		FeatherPluginSettings.LOGGER.log("Successfully created AW for " + project.projectName());
+		FeatherPluginSettings.LOGGER.log("Successfully created AW for " + version);
 	}
 
 	@Nullable
-	private static File createAWFile(Path rootProject, MossyProject project, StonecutterSettingsExtension stonecutter) {
-		String projectName = project.projectName();
-
+	private static File createAWFile(Path rootProject, String version) {
 		Path awsFolder = rootProject.resolve("src/main/resources/aws/");
 		File awsFolderFile = awsFolder.toFile();
 		if (!awsFolderFile.exists() && !awsFolderFile.mkdirs()) {
-			FeatherPluginSettings.LOGGER.log("Failed to get or create AW folder for " + projectName);
+			FeatherPluginSettings.LOGGER.log("Failed to get or create AW folder for " + version);
 			return null;
 		}
 
-		File versionedAWFile = awsFolder.resolve("%s.%s".formatted(projectName, project.loaderManager().getAWExtension(project.comparableMinecraftVersion(), stonecutter))).toFile();
+		File versionedAWFile = awsFolder.resolve(version + ".accesswidener").toFile();
 		if (versionedAWFile.exists()) {
 			return null;
 		}
 
 		try {
 			if (!versionedAWFile.createNewFile()) {
-				FeatherPluginSettings.LOGGER.log("Failed to create AW file for " + projectName);
+				FeatherPluginSettings.LOGGER.log("Failed to create AW file for " + version);
 				return null;
 			}
 		} catch (Exception e) {
@@ -61,5 +57,4 @@ public class AccessWidenerManager {
 
 		return versionedAWFile;
 	}
-
 }

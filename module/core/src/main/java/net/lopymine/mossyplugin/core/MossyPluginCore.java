@@ -7,9 +7,9 @@ import java.util.*;
 import java.util.Map.Entry;
 import lombok.Getter;
 import me.modmuss50.mpp.ModPublishExtension;
+import net.fabricmc.loom.api.LoomGradleExtensionAPI;
+import net.fabricmc.loom.task.RemapJarTask;
 import net.darkz.feather.common.*;
-import net.darkz.feather.core.data.MossyProjectConfigurationData;
-import net.darkz.feather.core.loader.*;
 import net.darkz.feather.core.manager.*;
 import net.darkz.feather.core.util.MultiVersion;
 import org.gradle.api.*;
@@ -34,16 +34,14 @@ public class FeatherPluginCore implements Plugin<Project> {
 	public void apply(@NotNull Project project) {
 		LOGGER.setup(project);
 
-		MossyProjectConfigurationData data = MossyProjectConfigurationData.create(project, this);
-
 		//
 
 		PluginContainer plugins = project.getPlugins();
 		plugins.apply("dev.kikugie.stonecutter");
+		plugins.apply("fabric-loom");
 		plugins.apply("me.modmuss50.mod-publish-plugin");
 		plugins.apply("dev.kikugie.fletching-table");
 		plugins.apply("maven-publish");
-		data.loaderManager().applyPlugins(data);
 
 		//
 
@@ -53,52 +51,55 @@ public class FeatherPluginCore implements Plugin<Project> {
 
 		//
 
-		FeatherPluginCore.configureProject(data);
-		JavaManager.apply(data);
-		J52JManager.apply(data);
-		ProcessResourcesManager.apply(data);
-		DependenciesManager.apply(data);
-		StonecutterManager.apply(data);
+		FeatherPluginCore.configureProject(project, this);
+
+		JavaManager.apply(project,this);
+		J52JManager.apply(project);
+		ProcessResourcesManager.apply(project, this);
+
+		DependenciesManager.apply(project);
+		StonecutterManager.apply(project, this);
 
 		//
 
-		FeatherPluginCore.configureExtensions(data);
-		FeatherPluginCore.configureTasks(data);
+		FeatherPluginCore.configureExtensions(project, this);
+		FeatherPluginCore.configureTasks(project, this);
 
 		LOGGER.log("Project Version: %s", project.getVersion());
 		LOGGER.log("Java Version: %s", this.javaVersionIndex);
 	}
 
-	private static void configureExtensions(@NotNull MossyProjectConfigurationData data) {
-		LoaderManager loaderManager = data.loaderManager();
-		Project project = data.project();
+	private static void configureExtensions(@NotNull Project project, FeatherPluginCore plugin) {
+		project.getExtensions().configure(LoomGradleExtensionAPI.class, (loom) -> {
+			LoomManager.apply(project, plugin, loom);
+		});
 
-		loaderManager.configureExtensions(data);
+		project.getExtensions().configure(ModPublishExtension.class, (mpe) -> {
+			ModPublishManager.apply(project, plugin, mpe);
+		});
 
-		project.afterEvaluate((p) -> {
-			project.getExtensions().configure(ModPublishExtension.class, (mpe) -> {
-				ModPublishManager.apply(data, mpe);
-			});
+		project.getGradle().addProjectEvaluationListener(new ProjectEvaluationListener() {
+			@Override
+			public void beforeEvaluate(@NotNull Project project) {
+			}
 
-			project.getExtensions().configure(PublishingExtension.class, (pe) -> {
-				String loader = MossyUtils.substringBefore(project.getName(), "-");
-				String version = MossyUtils.substringSince(project.getName(), "-");
-
-				RepositoryHandler repositories = pe.getRepositories();
-				for (ArtifactRepository repository : repositories) {
-					project.getRootProject().getTasks().register("publishMaven+%s+%s+%s".formatted(loader, repository.getName(), version), (task) -> {
-						task.setGroup("ad-mossy-maven-%s".formatted(loader));
-						task.dependsOn(":%s:publishAllPublicationsTo%sRepository".formatted(project.getName(), repository.getName()));
-					});
-				}
-			});
+			@Override
+			public void afterEvaluate(@NotNull Project project, @NotNull ProjectState state) {
+				project.getExtensions().configure(PublishingExtension.class, (pe) -> {
+					RepositoryHandler repositories = pe.getRepositories();
+					for (ArtifactRepository repository : repositories) {
+						project.getRootProject().getTasks().register("publish+%s+%s".formatted(project.getName(), repository.getName()), (task) -> {
+							task.setGroup("mossy-publish-" + repository.getName().toLowerCase());
+							task.dependsOn(":%s:publishAllPublicationsTo%sRepository".formatted(project.getName(), repository.getName()));
+						});
+					}
+				});
+				project.getGradle().removeProjectEvaluationListener(this);
+			}
 		});
 	}
 
-	private static void configureTasks(@NotNull MossyProjectConfigurationData data) {
-		Project project = data.project();
-		LoaderManager loaderManager = data.loaderManager();
-
+	private static void configureTasks(@NotNull Project project, FeatherPluginCore plugin) {
 		project.getTasks().register("rebuildLibs", Delete.class, task -> {
 			task.setGroup("build");
 			String modName = MossyUtils.getProperty(project, "data.mod_name").replace(" ", "");
@@ -114,46 +115,28 @@ public class FeatherPluginCore implements Plugin<Project> {
 		project.getTasks().named("build", task -> {
 			task.mustRunAfter("rebuildLibs");
 		});
-		project.afterEvaluate((p) -> {
-			project.getTasks().register("buildAndCollect", Copy.class, task -> {
-				task.setGroup("build");
-				task.dependsOn("rebuildLibs", "build");
-				task.from(((Jar) project.getTasks().getByName(loaderManager.getJarTaskName(data))).getArchiveFile().get());
-				task.into(getRootFile(project, "libs/"));
-			});
-
-			List<String> publishTasks = new ArrayList<>();
-
-			String modrinthId = getProperty(project, "modrinth_id");
-			String curseForgeId = getProperty(project,"curseforge_id");
-
-			if (!modrinthId.equals("none")) {
-				publishTasks.add("publishModrinth");
-			}
-			if (!curseForgeId.equals("none")) {
-				publishTasks.add("publishCurseforge");
-			}
-
-			for (String publishTask : publishTasks) {
-				project.getTasks().named(publishTask).configure((task) -> {
-					task.doLast((t) -> {
-						try {
-							Thread.sleep(1000L);
-						} catch (Exception e) {
-							FeatherPluginCore.LOGGER.log("Failed to wait before publishing!");
-							e.printStackTrace(System.out);
-						}
-					});
-				});
-			}
+		project.getTasks().register("buildAndCollect", Copy.class, task -> {
+			task.setGroup("build");
+			task.dependsOn("rebuildLibs", "build");
+			task.from(((RemapJarTask) project.getTasks().getByName("remapJar")).getArchiveFile().get());
+			task.into(getRootFile(project, "libs/"));
 		});
+		for (String publishTask : List.of("publishModrinth", "publishCurseforge")) {
+			project.getTasks().named(publishTask).configure((task) -> {
+				task.doLast((t) -> {
+					try {
+						Thread.sleep(1000L);
+					} catch (Exception e) {
+						FeatherPluginCore.LOGGER.log("Failed to wait before publishing!");
+						e.printStackTrace();
+					}
+				});
+			});
+		}
 	}
 
-	private static void configureProject(@NotNull MossyProjectConfigurationData data) {
-		Project project = data.project();
-		FeatherPluginCore plugin = data.plugin();
-
-		String projectVersion = plugin.getMossyProjectVersion(data);
+	private static void configureProject(@NotNull Project project, FeatherPluginCore plugin) {
+		String projectVersion = plugin.getMossyProjectVersion(project);
 		String mavenGroup = MossyUtils.getProperty(project, "data.mod_maven_group");
 		project.setVersion(projectVersion);
 		project.setGroup(mavenGroup);
@@ -171,27 +154,23 @@ public class FeatherPluginCore implements Plugin<Project> {
 	public static int getJavaVersion(Project project) {
 		String currentMCVersion = getCurrentMCVersion(project);
 		StonecutterBuildExtension stonecutter = getStonecutter(project);
-		return stonecutter.compare("26.1", currentMCVersion) == 1 ?
-				stonecutter.compare("1.20.5", currentMCVersion) == 1 ?
-						stonecutter.compare("1.18", currentMCVersion) == 1 ?
-								stonecutter.compare("1.16.5", currentMCVersion) == 1 ?
-										8
-										:
-										16
+		return stonecutter.compare("1.20.5", currentMCVersion) == 1 ?
+				stonecutter.compare("1.18", currentMCVersion) == 1 ?
+						stonecutter.compare("1.16.5", currentMCVersion) == 1 ?
+								8
 								:
-								17
+								16
 						:
-						21
+						17
 				:
-				25;
+				21;
 	}
 
 
 	public static MultiVersion getProjectMultiVersion(@NotNull Project currentProject) {
 		String currentMCVersion = getCurrentMCVersion(currentProject);
-		String currentLoader = getCurrentLoader(currentProject);
 
-		String[] versions = MossyUtils.getProperty(currentProject, "%s.versions_specifications".formatted(currentLoader)).split(" ");
+		String[] versions = MossyUtils.getProperty(currentProject, "versions_specifications").split(" ");
 		for (String version : versions) {
 			if (!version.contains("[") || !version.contains("]")) {
 				continue;
@@ -269,28 +248,25 @@ public class FeatherPluginCore implements Plugin<Project> {
 	}
 
 	public static String getCurrentMCVersion(@NotNull Project project) {
-		String version = getStonecutter(project).getCurrent().getVersion();
-		if (version.startsWith("26.1-")) {
-			return "26.1";
-		}
-		return version;
-	}
-
-	public static String getCurrentLoader(@NotNull Project project) {
-		return MossyUtils.substringBefore(getStonecutter(project).getCurrent().getProject(), "-");
+		return getStonecutter(project).getCurrent().getProject();
 	}
 
 	public static @NotNull StonecutterBuildExtension getStonecutter(@NotNull Project project) {
 		return (StonecutterBuildExtension) project.getExtensions().getByName("stonecutter");
 	}
 
+	public static String[] getMultiVersions(@NotNull Project project) {
+		return MossyUtils.getProperty(project, "multi_versions").split(" ");
+	}
+
 	public static String getProperty(Project project, String id) {
 		return MossyUtils.getProperty(project, id);
 	}
 
-	public String getMossyProjectVersion(MossyProjectConfigurationData data) {
-		String modVersion = MossyUtils.getProperty(data.project(), "data.mod_version");
-		return "%s+%s+%s".formatted(modVersion, data.comparableMinecraftVersion(), data.loaderName());
+	public String getMossyProjectVersion(Project project) {
+		String modVersion = MossyUtils.getProperty(project, "data.mod_version");
+		MultiVersion multiVersion = this.getProjectMultiVersion();
+		return "%s+%s".formatted(modVersion, multiVersion.projectVersion());
 	}
 
 	public static File getRootFile(@NotNull Project project, String path) {
