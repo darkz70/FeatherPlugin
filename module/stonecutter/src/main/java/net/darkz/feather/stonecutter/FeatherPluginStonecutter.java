@@ -29,19 +29,19 @@ public class FeatherPluginStonecutter extends FeatherBasePlugin {
 
         try {
             Object constants = scExt.getClass().getMethod("getConstants").invoke(scExt);
-
-            for (ModLoader ml : ModLoader.values()) {
-                constants.getClass()
-                         .getMethod("put", String.class, Boolean.class)
-                         .invoke(constants, ml.id, ml == loader);
+            java.lang.reflect.Method putMethod = null;
+            try {
+                putMethod = constants.getClass().getMethod("put", String.class, Object.class);
+            } catch (NoSuchMethodException e) {
+                putMethod = constants.getClass().getMethod("put", String.class, Boolean.class);
             }
 
-            constants.getClass()
-                     .getMethod("put", String.class, Boolean.class)
-                     .invoke(constants, "fabric_like", loader.isFabricLike());
-            constants.getClass()
-                     .getMethod("put", String.class, Boolean.class)
-                     .invoke(constants, "forge_like", loader.isForge() || loader.isNeoForge());
+            for (ModLoader ml : ModLoader.values()) {
+                putMethod.invoke(constants, ml.id, ml == loader);
+            }
+
+            putMethod.invoke(constants, "fabric_like", loader.isFabricLike());
+            putMethod.invoke(constants, "forge_like", loader.isForge() || loader.isNeoForge());
 
             info("Stonecutter constants injected for loader=" + loader.id);
         } catch (Exception e) {
