@@ -16,6 +16,7 @@ public abstract class FeatherBasePlugin implements Plugin<Project> {
     @Override
     public final void apply(Project project) {
         this.log = project.getLogger();
+        log.lifecycle("[FeatherPlugin] Initializing FeatherPlugin 1.2.3-SNAPSHOT (LOCAL)");
         ensureExtension(project);
         applyPlugin(project);
     }

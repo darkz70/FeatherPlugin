@@ -30,7 +30,6 @@ public class FeatherPluginStonecutter extends FeatherBasePlugin {
         try {
             Object constants = scExt.getClass().getMethod("getConstants").invoke(scExt);
             java.lang.reflect.Method putMethod = null;
-            // Try all possible 'put' methods
             for (java.lang.reflect.Method m : constants.getClass().getMethods()) {
                 if (m.getName().equals("put") && m.getParameterCount() == 2 && m.getParameterTypes()[0].equals(String.class)) {
                     putMethod = m;
@@ -38,14 +37,33 @@ public class FeatherPluginStonecutter extends FeatherBasePlugin {
                 }
             }
             
-            if (putMethod == null) throw new NoSuchMethodException("Could not find put(String, ...) method on " + constants.getClass().getName());
-
-            for (ModLoader ml : ModLoader.values()) {
-                putMethod.invoke(constants, ml.id, ml == loader);
+            if (putMethod == null) {
+                warn("Available methods on constants class " + constants.getClass().getName() + ":");
+                for (java.lang.reflect.Method m : constants.getClass().getMethods()) {
+                    warn("  " + m.getName() + "(" + java.util.Arrays.toString(m.getParameterTypes()) + ")");
+                }
+                throw new NoSuchMethodException("Could not find put(String, ...) method");
             }
 
-            putMethod.invoke(constants, "fabric_like", loader.isFabricLike());
-            putMethod.invoke(constants, "forge_like", loader.isForge() || loader.isNeoForge());
+            for (ModLoader ml : ModLoader.values()) {
+                try {
+                    putMethod.invoke(constants, ml.id, ml == loader);
+                } catch (Exception e) {
+                    putMethod.invoke(constants, ml.id, (Object) (ml == loader));
+                }
+            }
+
+            try {
+                putMethod.invoke(constants, "fabric_like", loader.isFabricLike());
+            } catch (Exception e) {
+                putMethod.invoke(constants, "fabric_like", (Object) loader.isFabricLike());
+            }
+
+            try {
+                putMethod.invoke(constants, "forge_like", loader.isForge() || loader.isNeoForge());
+            } catch (Exception e) {
+                putMethod.invoke(constants, "forge_like", (Object) (loader.isForge() || loader.isNeoForge()));
+            }
 
             info("Stonecutter constants injected for loader=" + loader.id);
         } catch (Exception e) {

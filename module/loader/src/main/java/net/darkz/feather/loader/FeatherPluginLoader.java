@@ -8,6 +8,7 @@ import net.darkz.feather.loader.configurator.ForgeConfigurator;
 import net.darkz.feather.loader.configurator.LoaderConfigurator;
 import net.darkz.feather.loader.configurator.NeoForgeConfigurator;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 
 public class FeatherPluginLoader extends FeatherBasePlugin {
 
@@ -53,6 +54,8 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
                 info("Applying loader toolchain (fallback): " + loader.name());
                 resolveConfigurator(loader).configure(p, ext);
             }
+
+
         });
     }
 

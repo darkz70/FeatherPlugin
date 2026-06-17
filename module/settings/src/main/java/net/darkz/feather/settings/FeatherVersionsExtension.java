@@ -12,9 +12,14 @@ import java.util.*;
 public class FeatherVersionsExtension {
 
     private final List<Entry> entries = new ArrayList<>();
+    private Runnable onUpdate;
 
     @Inject
     public FeatherVersionsExtension(Settings settings) {}
+
+    public void setOnUpdate(Runnable onUpdate) {
+        this.onUpdate = onUpdate;
+    }
 
     /**
      * Declare a Minecraft version together with the loaders you target.
@@ -28,6 +33,7 @@ public class FeatherVersionsExtension {
                     "[FeatherPlugin] version('" + mcVersion + "') requires at least one loader.");
         }
         entries.add(new Entry(mcVersion, List.of(loaders)));
+        if (onUpdate != null) onUpdate.run();
     }
 
     /** Returns all declared entries (immutable view). */
