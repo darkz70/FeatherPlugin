@@ -24,17 +24,25 @@ public class FeatherPluginCore extends FeatherBasePlugin {
                                 .getMethod("getProject").invoke(current);
                         // Формат: "26.1.2-fabric" или "fabric-26.1.2"
                         if (projectName.contains("-")) {
-                            int idx = projectName.lastIndexOf("-");
-                            String part1 = projectName.substring(0, idx);
-                            String part2 = projectName.substring(idx + 1);
-                            // Определяем что loader а что mc
-                            boolean part2IsLoader = part2.matches("fabric|neoforge|forge|quilt");
-                            if (part2IsLoader) {
-                                if (loaderVal.isEmpty()) ext.getLoader().set(part2);
-                                if (mcVal.isEmpty()) ext.getMinecraftVersion().set(part1);
+                            String part1, part2;
+                            if (projectName.matches("^(fabric|neoforge|forge|quilt)-.*")) {
+                                int idx = projectName.indexOf("-");
+                                part1 = projectName.substring(0, idx);
+                                part2 = projectName.substring(idx + 1);
                             } else {
+                                int idx = projectName.lastIndexOf("-");
+                                part1 = projectName.substring(0, idx);
+                                part2 = projectName.substring(idx + 1);
+                            }
+                            // Определяем что loader а что mc
+                            boolean part1IsLoader = part1.matches("fabric|neoforge|forge|quilt");
+                            boolean part2IsLoader = part2.matches("fabric|neoforge|forge|quilt");
+                            if (part1IsLoader) {
                                 if (loaderVal.isEmpty()) ext.getLoader().set(part1);
                                 if (mcVal.isEmpty()) ext.getMinecraftVersion().set(part2);
+                            } else if (part2IsLoader) {
+                                if (loaderVal.isEmpty()) ext.getLoader().set(part2);
+                                if (mcVal.isEmpty()) ext.getMinecraftVersion().set(part1);
                             }
                         }
                     } catch (Exception e) {
