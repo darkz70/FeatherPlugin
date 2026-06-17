@@ -35,21 +35,24 @@ public class FeatherPluginLoader extends FeatherBasePlugin {
                             .getToolchain().getLanguageVersion().set(org.gradle.jvm.toolchain.JavaLanguageVersion.of(25));
                 }
 
-                // 3. Immediately add the minecraft dependency so that loom's own
-                //    afterEvaluate listener (registered during apply above) finds
-                //    the 'minecraft' configuration non-empty when it fires.
-                if (eagerLoader.isFabricLike()) {
-                    project.getDependencies().add("minecraft", "com.mojang:minecraft:" + mcVersion);
-                }
+                // 3. Populate the extension eagerly so the configurator can use it
+                ext.getMinecraftVersion().set(mcVersion);
+                ext.getLoaderVersion().set(project.findProperty("build.fabric_loader") != null ? project.findProperty("build.fabric_loader").toString() : "unknown");
+
+                // 4. Immediately configure the loader toolchain to avoid afterEvaluate resolution conflicts
+                resolveConfigurator(eagerLoader).configure(project, ext);
             } catch (IllegalArgumentException ignored) {
                 // Not a recognized loader prefix, will be applied in afterEvaluate
             }
         }
 
         project.afterEvaluate(p -> {
-            ModLoader loader = ext.resolvedLoader();
-            info("Applying loader toolchain: " + loader.name());
-            resolveConfigurator(loader).configure(p, ext);
+            // If the loader wasn't applied eagerly, apply it now
+            if (!p.getPlugins().hasPlugin("fabric-loom") && !p.getPlugins().hasPlugin("net.fabricmc.fabric-loom") && !p.getPlugins().hasPlugin("forge") && !p.getPlugins().hasPlugin("net.neoforged.moddev")) {
+                ModLoader loader = ext.resolvedLoader();
+                info("Applying loader toolchain (fallback): " + loader.name());
+                resolveConfigurator(loader).configure(p, ext);
+            }
         });
     }
 
