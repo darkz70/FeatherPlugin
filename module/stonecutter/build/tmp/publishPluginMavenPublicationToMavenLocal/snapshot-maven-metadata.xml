@@ -3,25 +3,25 @@
   <groupId>net.darkz.feather</groupId>
   <artifactId>stonecutter</artifactId>
   <versioning>
-    <lastUpdated>20260617051643</lastUpdated>
+    <lastUpdated>20260617052418</lastUpdated>
     <snapshot>
       <localCopy>true</localCopy>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
+        <extension>module</extension>
+        <value>1.2.3-SNAPSHOT</value>
+        <updated>20260617052418</updated>
+      </snapshotVersion>
+      <snapshotVersion>
         <extension>pom</extension>
         <value>1.2.3-SNAPSHOT</value>
-        <updated>20260617051643</updated>
+        <updated>20260617052418</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>jar</extension>
         <value>1.2.3-SNAPSHOT</value>
-        <updated>20260617051643</updated>
-      </snapshotVersion>
-      <snapshotVersion>
-        <extension>module</extension>
-        <value>1.2.3-SNAPSHOT</value>
-        <updated>20260617051643</updated>
+        <updated>20260617052418</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>

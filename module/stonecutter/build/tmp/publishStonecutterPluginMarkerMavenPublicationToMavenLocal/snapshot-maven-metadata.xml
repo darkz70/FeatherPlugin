@@ -3,7 +3,7 @@
   <groupId>net.darkz.feather.feather-stonecutter</groupId>
   <artifactId>net.darkz.feather.feather-stonecutter.gradle.plugin</artifactId>
   <versioning>
-    <lastUpdated>20260617051643</lastUpdated>
+    <lastUpdated>20260617052418</lastUpdated>
     <snapshot>
       <localCopy>true</localCopy>
     </snapshot>
@@ -11,7 +11,7 @@
       <snapshotVersion>
         <extension>pom</extension>
         <value>1.2.3-SNAPSHOT</value>
-        <updated>20260617051643</updated>
+        <updated>20260617052418</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>

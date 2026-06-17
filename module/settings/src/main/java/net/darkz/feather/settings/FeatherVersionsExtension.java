@@ -36,6 +36,10 @@ public class FeatherVersionsExtension {
         if (onUpdate != null) onUpdate.run();
     }
 
+    public void register() {
+        if (onUpdate != null) onUpdate.run();
+    }
+
     /** Returns all declared entries (immutable view). */
     public List<Entry> getEntries() {
         return Collections.unmodifiableList(entries);

@@ -27,11 +27,11 @@
         {
           "name": "loader-1.2.3-SNAPSHOT.jar",
           "url": "loader-1.2.3-SNAPSHOT.jar",
-          "size": 19925,
-          "sha512": "a1d86c41d13d602141b50e27505ecbb2ad6124269e2891031f1f8052797bf5f9aaf75f94deb18a7bf68eb03390a95c075606b51e0ecf1b191a6fa5af3b490731",
-          "sha256": "42606be7d800a2685c7a0d75e4f6884a2226ae7a3f53b960a1f6f205f186ddfe",
-          "sha1": "4a149ba49965ed3e9281c5b111523236b50bc849",
-          "md5": "8d903b725275e6a7582cddc1278211cf"
+          "size": 19580,
+          "sha512": "4810badad6d3b23dcdceed32a537819244990022741dad4b7fee724ecb82a582f4f57af0fbb9dda8194b5452c51f2e82ea1aaab7aa13d41a40c64ef9f4a89795",
+          "sha256": "0684c314c53a3130a4b5362babca389dc1620b606ea2f276e1165faf6800e392",
+          "sha1": "49a2d7a827df0b12777c8bb6a4e71f5d64b7733e",
+          "md5": "8b51aea413053df1e8662a3d64aac758"
         }
       ]
     },
@@ -57,11 +57,11 @@
         {
           "name": "loader-1.2.3-SNAPSHOT.jar",
           "url": "loader-1.2.3-SNAPSHOT.jar",
-          "size": 19925,
-          "sha512": "a1d86c41d13d602141b50e27505ecbb2ad6124269e2891031f1f8052797bf5f9aaf75f94deb18a7bf68eb03390a95c075606b51e0ecf1b191a6fa5af3b490731",
-          "sha256": "42606be7d800a2685c7a0d75e4f6884a2226ae7a3f53b960a1f6f205f186ddfe",
-          "sha1": "4a149ba49965ed3e9281c5b111523236b50bc849",
-          "md5": "8d903b725275e6a7582cddc1278211cf"
+          "size": 19580,
+          "sha512": "4810badad6d3b23dcdceed32a537819244990022741dad4b7fee724ecb82a582f4f57af0fbb9dda8194b5452c51f2e82ea1aaab7aa13d41a40c64ef9f4a89795",
+          "sha256": "0684c314c53a3130a4b5362babca389dc1620b606ea2f276e1165faf6800e392",
+          "sha1": "49a2d7a827df0b12777c8bb6a4e71f5d64b7733e",
+          "md5": "8b51aea413053df1e8662a3d64aac758"
         }
       ]
     }
