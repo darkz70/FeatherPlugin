@@ -30,11 +30,15 @@ public class FeatherPluginStonecutter extends FeatherBasePlugin {
         try {
             Object constants = scExt.getClass().getMethod("getConstants").invoke(scExt);
             java.lang.reflect.Method putMethod = null;
-            try {
-                putMethod = constants.getClass().getMethod("put", String.class, Object.class);
-            } catch (NoSuchMethodException e) {
-                putMethod = constants.getClass().getMethod("put", String.class, Boolean.class);
+            // Try all possible 'put' methods
+            for (java.lang.reflect.Method m : constants.getClass().getMethods()) {
+                if (m.getName().equals("put") && m.getParameterCount() == 2 && m.getParameterTypes()[0].equals(String.class)) {
+                    putMethod = m;
+                    break;
+                }
             }
+            
+            if (putMethod == null) throw new NoSuchMethodException("Could not find put(String, ...) method on " + constants.getClass().getName());
 
             for (ModLoader ml : ModLoader.values()) {
                 putMethod.invoke(constants, ml.id, ml == loader);
