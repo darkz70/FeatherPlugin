@@ -45,12 +45,13 @@ public class FabricConfigurator implements LoaderConfigurator {
             project.getLogger().lifecycle("[FeatherPlugin/Fabric] Skipping mappings as 'mappings' configuration is not present (normal for unobfuscated MC 26.1+)");
         }
 
-        project.getDependencies().add("modImplementation", "net.fabricmc:fabric-loader:" + loader);
+                String modImpl = project.getConfigurations().findByName("modImplementation") != null ? "modImplementation" : "implementation";
+        project.getDependencies().add(modImpl, "net.fabricmc:fabric-loader:" + loader);
 
         // Fabric API
         String fabricApi = ext.getFabricApi().getOrElse("");
         if (!fabricApi.isEmpty() && !fabricApi.equals("unknown")) {
-            project.getDependencies().add("modImplementation",
+            project.getDependencies().add(modImpl,
                     "net.fabricmc.fabric-api:fabric-api:" + fabricApi);
         }
 
