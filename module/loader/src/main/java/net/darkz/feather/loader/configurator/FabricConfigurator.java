@@ -25,20 +25,24 @@ public class FabricConfigurator implements LoaderConfigurator {
             project.getDependencies().add("minecraft", "com.mojang:minecraft:" + mc);
         }
 
-        // Mojang mappings
-        Object loom = project.getExtensions().findByName("loom");
-        if (loom != null) {
-            try {
-                Object mojangMappings = loom.getClass()
-                        .getMethod("officialMojangMappings")
-                        .invoke(loom);
-                project.getDependencies().add("mappings", mojangMappings);
-            } catch (Exception e) {
-                project.getLogger().warn("[FeatherPlugin/Fabric] Mojang mappings error: " + e.getMessage());
-                // Fallback to Yarn
-                project.getDependencies().add("mappings",
-                        project.getDependencies().create("net.fabricmc:yarn:" + mc + "+build.1:v2"));
+        // Mojang mappings (only if 'mappings' configuration exists)
+        if (project.getConfigurations().findByName("mappings") != null) {
+            Object loom = project.getExtensions().findByName("loom");
+            if (loom != null) {
+                try {
+                    Object mojangMappings = loom.getClass()
+                            .getMethod("officialMojangMappings")
+                            .invoke(loom);
+                    project.getDependencies().add("mappings", mojangMappings);
+                } catch (Exception e) {
+                    project.getLogger().warn("[FeatherPlugin/Fabric] Mojang mappings error: " + e.getMessage());
+                    // Fallback to Yarn
+                    project.getDependencies().add("mappings",
+                            project.getDependencies().create("net.fabricmc:yarn:" + mc + "+build.1:v2"));
+                }
             }
+        } else {
+            project.getLogger().lifecycle("[FeatherPlugin/Fabric] Skipping mappings as 'mappings' configuration is not present (normal for unobfuscated MC 26.1+)");
         }
 
         project.getDependencies().add("modImplementation", "net.fabricmc:fabric-loader:" + loader);
