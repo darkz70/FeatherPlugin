@@ -1,9 +1,5 @@
-plugins {
-    id "org.gradle.toolchains.foojay-resolver-convention" version "0.8.0"
-}
-
 rootProject.name = plugin_class
 
-List.of("core", "loader", "stonecutter", "settings", "common").forEach {
-    include(":module:${it}")
+List.of("core", "stonecutter", "settings", "common").forEach {
+	include(":module:${it}")
 }
