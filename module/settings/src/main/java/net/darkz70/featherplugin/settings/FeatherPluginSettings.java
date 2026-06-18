@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public class FeatherPluginSettings implements Plugin<Settings> {
 
-	public static final String PLUGIN_VERSION = "1.0.2";
+	public static final String PLUGIN_VERSION = "1.0.3";
 
 	public static final FeatherLogger LOGGER = new FeatherLogger("Settings");
 
@@ -101,4 +101,4 @@ public class FeatherPluginSettings implements Plugin<Settings> {
 		return properties;
 	}
 
-}
+												}
