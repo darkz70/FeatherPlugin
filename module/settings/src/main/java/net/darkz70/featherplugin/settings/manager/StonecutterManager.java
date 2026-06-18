@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 public class StonecutterManager {
 
 	public static void apply(@NotNull Settings settings, Map<String, List<String>> projects) {
+		settings.getPlugins().apply("dev.kikugie.stonecutter");
 		StonecutterSettingsExtension stonecutter = settings.getExtensions().getByType(StonecutterSettingsExtension.class);
 		stonecutter.create(settings.getRootProject(), (builder) -> {
 			String propertyLoader = settings.getProviders().gradleProperty("ci_loader").getOrNull();
