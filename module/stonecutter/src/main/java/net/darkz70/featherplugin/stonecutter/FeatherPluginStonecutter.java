@@ -22,6 +22,7 @@ public class FeatherPluginStonecutter implements Plugin<Project> {
 
 	@Override
 	public void apply(@NotNull Project project) {
+		project.getPlugins().apply("dev.kikugie.stonecutter");
 		Map<String, Project> childProjects = project.getChildProjects();
 		TaskContainer tasks = project.getTasks();
 		StonecutterControllerExtension controller = project.getExtensions().getByType(StonecutterControllerExtension.class);
