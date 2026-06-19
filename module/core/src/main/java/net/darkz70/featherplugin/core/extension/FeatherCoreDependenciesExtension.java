@@ -1,11 +1,25 @@
 package net.darkz70.featherplugin.core.extension;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.gradle.api.Action;
 import org.gradle.api.tasks.*;
 
 @Getter
+@Setter
 public class FeatherCoreDependenciesExtension {
+
+	@Input
+	String loader;
+
+	@Input
+	String mappings;
+
+	@Input
+	String minecraftVersion;
+
+	@Input
+	String loaderVersion;
 
 	@Input
 	String minecraft;
