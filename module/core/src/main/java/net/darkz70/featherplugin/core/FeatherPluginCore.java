@@ -12,6 +12,7 @@ import net.darkz70.featherplugin.core.data.FeatherProjectConfigurationData;
 import net.darkz70.featherplugin.core.loader.*;
 import net.darkz70.featherplugin.core.manager.*;
 import net.darkz70.featherplugin.core.util.MultiVersion;
+import net.darkz70.featherplugin.core.extension.FeatherCoreDependenciesExtension;
 import org.gradle.api.*;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
