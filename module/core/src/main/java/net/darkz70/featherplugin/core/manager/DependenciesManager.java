@@ -146,22 +146,11 @@ public class DependenciesManager {
 
 	public static void apply(@NotNull FeatherProjectConfigurationData data) {
 		Project project = data.project();
-		project.getExtensions().create("mossyDependencies", FeatherCoreDependenciesExtension.class);
 
 		addRepositories(project);
 		addCustomConfigurations(data);
 
-		project.getGradle().addProjectEvaluationListener(new ProjectEvaluationListener() {
-			@Override
-			public void beforeEvaluate(@NotNull Project project) {
-			}
-
-			@Override
-			public void afterEvaluate(@NotNull Project project, @NotNull ProjectState state) {
-				FeatherCoreDependenciesExtension extension = project.getExtensions().getByType(FeatherCoreDependenciesExtension.class);
-				DependenciesManager.addDependencies(data, extension);
-				project.getGradle().removeProjectEvaluationListener(this);
-			}
-		});
+		FeatherCoreDependenciesExtension extension = project.getExtensions().getByType(FeatherCoreDependenciesExtension.class);
+		DependenciesManager.addDependencies(data, extension);
 	}
 }
