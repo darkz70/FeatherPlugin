@@ -34,7 +34,9 @@ public class FeatherPluginCore implements Plugin<Project> {
 	public void apply(@NotNull Project project) {
 		LOGGER.setup(project);
 
-		FeatherProjectConfigurationData data = FeatherProjectConfigurationData.create(project, this);
+		FeatherCoreDependenciesExtension feather = project.getExtensions().create("feather", FeatherCoreDependenciesExtension.class);
+
+		FeatherProjectConfigurationData data = FeatherProjectConfigurationData.create(project, this, feather);
 
 		//
 
@@ -297,4 +299,5 @@ public class FeatherPluginCore implements Plugin<Project> {
 		return project.getRootProject().file(path);
 	}
 
-}
+		}
+			
