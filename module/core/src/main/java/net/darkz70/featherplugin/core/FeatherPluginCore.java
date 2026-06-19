@@ -9,10 +9,10 @@ import lombok.Getter;
 import me.modmuss50.mpp.ModPublishExtension;
 import net.darkz70.featherplugin.common.*;
 import net.darkz70.featherplugin.core.data.FeatherProjectConfigurationData;
+import net.darkz70.featherplugin.core.extension.FeatherCoreDependenciesExtension;
 import net.darkz70.featherplugin.core.loader.*;
 import net.darkz70.featherplugin.core.manager.*;
 import net.darkz70.featherplugin.core.util.MultiVersion;
-import net.darkz70.featherplugin.core.extension.FeatherCoreDependenciesExtension;
 import org.gradle.api.*;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
@@ -60,16 +60,17 @@ public class FeatherPluginCore implements Plugin<Project> {
 		JavaManager.apply(data);
 		J52JManager.apply(data);
 		ProcessResourcesManager.apply(data);
-		DependenciesManager.apply(data);
-		StonecutterManager.apply(data);
 
-		//
+		project.afterEvaluate((p) -> {
+			DependenciesManager.apply(data);
+			StonecutterManager.apply(data);
 
-		FeatherPluginCore.configureExtensions(data);
-		FeatherPluginCore.configureTasks(data);
+			FeatherPluginCore.configureExtensions(data);
+			FeatherPluginCore.configureTasks(data);
 
-		LOGGER.log("Project Version: %s", project.getVersion());
-		LOGGER.log("Java Version: %s", this.javaVersionIndex);
+			LOGGER.log("Project Version: %s", project.getVersion());
+			LOGGER.log("Java Version: %s", this.javaVersionIndex);
+		});
 	}
 
 	private static void configureExtensions(@NotNull FeatherProjectConfigurationData data) {
@@ -300,5 +301,5 @@ public class FeatherPluginCore implements Plugin<Project> {
 		return project.getRootProject().file(path);
 	}
 
-		}
+				 }
 			
